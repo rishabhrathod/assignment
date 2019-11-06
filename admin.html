@@ -1,0 +1,65 @@
+<!DOCTYPE HTML>
+<html><head><title> Complaints </title>
+<link type="text/css" href="style.css" rel="stylesheet">
+<link type="text/css" href="login.css" rel="stylesheet">
+<link type="text/css" href="js/jquery-ui.css" rel="stylesheet">
+<script src="js/jquery.js"></script>
+<script src="js/jquery-ui.js"></script>
+<script src="js/functions.js"></script>
+<script>
+
+    $(document).ready(function(){
+
+    init_page();
+    init_header('Admin page');
+    var id = 1;
+    add_version('Version 1.1 / Release 2019-09-10');
+    $.get('cgi-bin/complaint_getdata.pl?TYPE=LISTCOMPLAINT',function(data)
+    {
+    console.log(data);
+    for (let i of data)
+    {
+        $("#complaintbody").append(`<tr><td class="c_id"><input type="text" id="c_id${id}" value="${i[0]}" readonly></td><td>${i[1]}</td><td>${i[2]}</td><td>${i[3]}</td><td>
+                <textarea rows ="2" cols="20">${i[4]}</textarea></td>
+                <td class="status"><SELECT NAME="status" id="status${id}" class="required"><option value="">Please select..</option>
+                <option value="initiated">Initiated</option>
+                <option value="closed">closed</option></SELECT></td>
+                <td><input type="button" id="update" id="update${id}" value="update" class="update"></td></tr>`);
+    }
+    $(".update").click(function(){
+        let c_id = ($(this).parent().siblings('.c_id').children().val());
+        let status = ($(this).parent().siblings('.status').children().val());
+        $.get(`cgi-bin/complaint_savedata.pl?TYPE=UPDATE&c_id=${c_id}&status=${status}`,function(data)
+        {
+            alert(data.message);
+        });
+    });
+    });
+    });
+
+
+</script>
+</head>
+<body>
+    <div id="header"></div>
+    <div class="align_center">
+        <form ACTION="#" accept-charset="utf-8" METHOD="POST" class="form-style-10" target="_blank">
+        <table class = "align_center" id="complaint" style="width:100%;border-collapse: collapse" border=1 >
+            <thead>
+                <tr>
+                <th>complain_id</th>
+                <th>user_name</th>
+                <th>mobile</th>
+                <th>problem type</th>
+                <th>Comments</th>
+                <th>status</th>
+                </tr>
+            </thead>
+            <tbody id="complaintbody">
+
+            </tbody>
+        </table>
+    </div>
+    <div id="version_info"></div>
+</body>
+</html>

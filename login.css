@@ -1,0 +1,34 @@
+/* Version 1.1 / Release 2019-09-10 */
+.status_report {
+width: 800px;
+}
+
+.div_login {margin: 0 auto; width: 300px;}
+
+.div_recv {margin: 0 auto; width: 800px;}
+
+.div_refill {margin: 0 auto; width: 1000px;}
+
+.tool_tbl {width: 100%;}
+
+.partid {width: 110px;}
+.partsn {width: 70px;}
+.partdesc {width: 300px;}
+.partqty {width: 50px; font-size: 10px;}
+.partrem {width: 200px;}
+.partid1 {width: 120px;}
+
+#milestones td {
+font-size:12px;
+}
+
+.wide table {
+width: 100%;
+}
+
+.aligna{
+  text-align: left;padding-right:1em; padding-top: 0.5em;
+}
+.alignb{
+  text-align: left;padding-left:1em;padding-right: 1em;
+}

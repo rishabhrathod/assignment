@@ -1,0 +1,219 @@
+<!DOCTYPE HTML>
+<html><head><title> Complaints </title>
+<link type="text/css" href="style.css" rel="stylesheet">
+<link type="text/css" href="login.css" rel="stylesheet">
+<link type="text/css" href="js/jquery-ui.css" rel="stylesheet">
+<link type="text/css" href="js/datatables.css" rel="stylesheet">
+<script src="js/jquery.js"></script>
+<script src="js/jquery-ui.js"></script>
+<script src="js/datatables.js"></script>
+<script src="js/functions.js"></script>
+<script>
+$(document).ready(function(){
+
+init_page();
+init_header('Complaint portal');
+var check = true;
+$("#signup_table").hide();
+$("#complaint_div").hide();
+$( ".pickdate" ).datepicker({dateFormat:"yy-mm-dd"});
+
+if(getCookie('username'))
+{
+    $("#div_login").hide();
+    $("#complaint_div").show();
+    $("#c_username").val(getCookie('username'));
+    $("#uid").val(getCookie('uid'));
+}
+
+$("#signup").click(function(){
+    $("#login_table").hide();
+    $("#signup_table").toggle();
+});
+
+$("#register").click(function(){
+    $(".notnull").each(function(){
+        this.value.trim();
+        if(this.value == "")
+        {
+            $(this).focus();
+            check = false;
+            alert("please enter all required fields"); 
+            return false;
+        }
+        if($("#regpass").val() != $("#repass").val())
+        {
+            check = false;
+            alert("password and Retyped password does not match");
+            $("#regpass").val('');
+            $("#repass").val('');
+        }
+    });
+    if(check)
+    {
+        let datastring = $("#regform").serialize();
+        console.log($("#regform").serialize());
+        $.ajax({
+        type: "POST",
+        url: "cgi-bin/complaint_savedata.pl",
+        data: datastring,
+        dataType: "json",
+        success: function(data) {
+            console.log(data);
+            alert(data.message);
+            if(data.check == 0){
+                window.location.reload();
+            }
+        }
+    });
+    }
+});
+
+$("#login").click(function(){
+    $(".nonull").each(function(){
+        if(this.value == "")
+        {
+            $(this).focus();
+            check = false;
+            alert("please enter all required fields"); 
+            return false;
+        }
+    });
+    if(check)
+        {
+            let datastring = $("#loginform").serialize();
+            console.log(datastring);
+            $.ajax({
+            type: "POST",
+            url: "cgi-bin/complaint_getdata.pl",
+            data: datastring,
+            dataType: "json",
+            success: function(data) {
+                if(data[0][1])
+                {
+                setCookie('username', data[0][1], 1);
+                setCookie('uid', data[0][0], 1);
+                $("#div_login").hide();
+                $("#complaint_div").show();
+                window.location.reload();
+                }
+                else{
+                    alert("incorrect username/password");
+                    $("#logpass").val('');
+                }
+        }
+    });
+        }
+
+});
+
+$("#back").click(function(){
+    document.location.reload();
+});
+
+$.get('cgi-bin/complaint_getdata.pl?TYPE=GETCOMPLAIN',function(data)
+{
+    for (let i of data)
+    {
+        $("#c_type").append(`<option value=${i[0]}>${i[1]}</option>`)
+    }
+});
+
+$("#c_submit").click(function(){
+    $(".required").each(function(){
+        if(this.value == "")
+        {
+            alert("Missing data!");
+            $(this).focus();
+            check = false;
+            return false;
+        }
+    });
+        if(check)
+        {
+            let datastring = $("#complaintform").serialize();
+            $.ajax({
+            type: "POST",
+            url: "cgi-bin/complaint_savedata.pl",
+            data: datastring,
+            dataType: "json",
+            success: function(data) {
+                alert(data.message);
+                window.location.reload();
+            }
+        });   
+        }
+});
+
+$("#logout").click(function(){
+    document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.cookie = "uid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.location.reload();
+});
+
+$("#view").click(()=>{
+        $.get(`cgi-bin/complaint_getdata.pl?TYPE=REPORT&uid=${$("#uid").val()}`,function(data){
+        console.log(data);
+        complaints = new Array();
+        var fields = ['Complain_id','comments','status'];
+        $("#dialog").html('<table id="s_complaints" style="text-align:center;border-collapse: collapse;" border="1px"><thead><tr></tr></thead></table>');
+        for (i of data){
+                    complaints.push(i)
+                } 
+        for (title of fields)
+		{
+			$("#s_complaints thead tr").append(`<th class="select-filter">${title}</th>`);	
+        }
+        $("#s_complaints").DataTable( {
+		data: complaints,
+		dom : 'Bfrtip',
+		buttons: ['copy', 'csv', 'excel', 'pdf'],
+		});
+        $("#dialog").dialog({
+                height : 800,
+                width : 1200
+                });
+        });
+});
+
+add_version('Version 1.1 / Release 2019-09-10');
+
+});
+</script>
+</head>
+<body>
+<div id="header"></div>
+<div class="div_login" id="div_login">
+<form name="STAT_REPORT_FORM" id="loginform" action="#" method="post" class="form-style-10">
+<table class="align_center" id="login_table">
+    <tr><td colspan="2"><h4>Login</h4></td></tr>
+    <tr><td>Username</td><td><input type="text" name="loguser" id="loguser" class="nonull"></td></tr>
+    <tr><td>Password</TD><TD><INPUT type="password" name="logpass" id="logpass" class="nonull"></td></tr>
+	<tr><td COLSPAN="2"><input type="button" id="login" name="login" value="Login"><input type="button" value="signup" id="signup" name="signup"></td></tr>
+</form>
+</table>
+<table class="align_center" id="signup_table">
+<form name="STAT_REPORT_FORM" id="regform" action="#" method="post" class="form-style-10">
+    <tr><td colspan="2"><h4>Registration</h4></td></tr>
+	<tr><td>Username</td><td><input type="text" name="regname" id="regname" class="notnull"></td></tr>
+    <tr><td>Password</TD><TD><INPUT type="password" name="regpass" id="regpass" class="notnull"></td></tr>
+    <tr><td>Retype Password</td><td><INPUT type="password" name="repass" id="repass" class="notnull"></td></tr>
+	<tr><td COLSPAN="2"><input type="button" id="register" name="register" value="register"><input type="button" value="back" id="back" name="back"></td></tr>
+</form>
+</table>
+</div>
+<div id="complaint_div" class="align_center">
+        <form name="STAT_REPORT_FORM" ID="complaintform" ACTION="#" accept-charset="utf-8" METHOD="POST" class="form-style-10" target="_blank">
+            <table class="align_center">
+            <tr><td class="aligna">Name:</td><td class="alignb"><input type="text" id="c_username" name="c_username" readonly></td><td>Mobile number:</td><td><input type="tel" id="phone" name="phone" class="required"></td></tr>
+            <tr><td class="aligna">Complaint type:</td><td class="alignb"><SELECT NAME="c_type" id="c_type" class="required"><option value="">Please select..</option></SELECT></td><td>facing problem since:</td><td><INPUT TYPE="TEXT" NAME="PODATE" ID="PODATE" class="pickdate required"></td></tr>
+            <tr><td class="aligna">Comments:</td><td class="alignb"><textarea rows ="5" cols="40" name="c_comments" id="c_comments" maxlength="500" class="required"></textarea></td></tr>
+            <tr style="margin-left: 50%;"><td colspan="4"><input type="button" id="c_submit" name="c_submit" value="submit"><input type="button" name="logout" id="logout" value="logout" style="margin-left:1em;"><input type="button" name="view" id="view" value="view requests" style="margin-left:1em;"></td></tr>
+            <input type="hidden" name="uid" id="uid">
+        </table>
+        </form>
+</div>
+<div id="version_info"></div>
+<div id="dialog" title="complaints"></div>
+</body>
+</html>
