@@ -50,31 +50,4 @@ my $ARR_REF=$DBH->selectall_arrayref($SQL) or die "Cannot run LKP SQL $SQL!" ;
 return @{$ARR_REF};
 }
 
-sub get_data_hash
-{
-my ($DBH,$SQL,$KEY)=@_;
-my $ARR_REF=$DBH->selectall_hashref($SQL,$KEY) or die "Cannot run LKP SQL $SQL!" ;
-return %{$ARR_REF};
-}
-
-sub get_auth_user()
-{
-my $cgi = CGI->new;
-my $SECRET="6HiSb9B9jeid0DT0FNgH5oru";
-my $AUTHCOOKIE = $cgi->cookie('auth_cookie');
-my $DATA = decode_jwt(token=>$AUTHCOOKIE, key=>$SECRET);
-my @ARR=split(/:/,$DATA);
-return $ARR[0];
-}
-
-sub get_user_role()
-{
-my $cgi = CGI->new;
-my $SECRET="6HiSb9B9jeid0DT0FNgH5oru";
-my $AUTHCOOKIE = $cgi->cookie('auth_cookie');
-my $DATA = decode_jwt(token=>$AUTHCOOKIE, key=>$SECRET);
-my @ARR=split(/:/,$DATA);
-return $ARR[1];
-}
-
 1;
